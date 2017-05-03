@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         //Run the getAllGuests function and store the result in a Cursor variable
         Cursor cursor = getAllGuests();
         // Create an adapter for that cursor to display the data
-        mAdapter = new GuestListAdapter(this,cursor.getCount());
+        mAdapter = new GuestListAdapter(this,cursor);
 
         // Link the adapter to the RecyclerView
         waitlistRecyclerView.setAdapter(mAdapter);
