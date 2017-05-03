@@ -1,12 +1,16 @@
 package com.example.android.waitlist;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 
 import com.example.android.waitlist.data.TestUtil;
 import com.example.android.waitlist.data.WaitlistContract;
@@ -19,12 +23,21 @@ public class MainActivity extends AppCompatActivity {
 
     private SQLiteDatabase mDB;
 
+    private EditText mNewGuestNameEditText;
+    private EditText mNewPartySizeEditText;
+
+    private final static String LOG_TAG = MainActivity.class.getSimpleName();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         RecyclerView waitlistRecyclerView;
+
+        mNewGuestNameEditText = (EditText)findViewById(R.id.person_name_edit_text);
+        mNewPartySizeEditText = (EditText)findViewById(R.id.party_count_edit_text);
 
         // Set local attributes to corresponding views
         waitlistRecyclerView = (RecyclerView) this.findViewById(R.id.all_guests_list_view);
@@ -42,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
         // because you will be adding restaurant customers
         mDB = dbHelper.getWritableDatabase();
 
-        //Fill the database with fake data
-        TestUtil.insertFakeData(mDB);
+        /*//Fill the database with fake data
+        TestUtil.insertFakeData(mDB);*/
 
         //Run the getAllGuests function and store the result in a Cursor variable
         Cursor cursor = getAllGuests();
@@ -80,6 +93,35 @@ public class MainActivity extends AppCompatActivity {
      * @param view The calling view (button)
      */
     public void addToWaitlist(View view) {
+
+        if(mNewGuestNameEditText.getText().length() == 0 ||
+        mNewPartySizeEditText.getText().length() == 0)
+        {
+            return;
+        }
+
+        int partysize = 1;
+
+        try {
+            partysize = Integer.parseInt(mNewPartySizeEditText.getText().toString());
+        }catch (Exception ex)
+        {
+            Log.e(LOG_TAG, "Failed to parse party size text to number: " + ex.getMessage());
+
+        }
+        addNewGuest(mNewGuestNameEditText.getText().toString(),partysize);
+        mAdapter.swapCursor(getAllGuests());
+        mNewPartySizeEditText.clearFocus();
+        mNewGuestNameEditText.getText().clear();
+        mNewPartySizeEditText.getText().clear();
+    }
+
+    private long addNewGuest(String name, int partySize)
+    {
+        ContentValues cv = new ContentValues();
+        cv.put(WaitlistContract.WaitlistEntry.COLUMN_GUEST_NAME, name);
+        cv.put(WaitlistContract.WaitlistEntry.COLUMN_PARTY_SIZE, partySize);
+        return mDB.insert(WaitlistContract.WaitlistEntry.TABLE_NAME,null,cv);
 
     }
 

@@ -81,4 +81,13 @@ public class GuestListAdapter extends RecyclerView.Adapter<GuestListAdapter.Gues
         }
 
     }
+
+    public void swapCursor(Cursor newCursor)
+    {
+        if (mCursor != null) mCursor.close();
+        mCursor = newCursor;
+        if (newCursor != null) {
+            this.notifyDataSetChanged();
+        }
+    }
 }
